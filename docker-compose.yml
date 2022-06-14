@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  laravel:
+    image: fsl-test/laravel:1.0.0
+    build:
+      context: ./docker/php
+    # user: "1000:1000"
+    working_dir: /var/www/html
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${PATH}:/var/www/html
+      - ./docker/php/php.ini:/usr/local/etc/php/conf.d/php.ini
+      - ./docker/php/apache.conf:/etc/apache2/sites-available/000-default.conf
+      - ./docker/php/entrypoint.sh:/entrypoint.sh
+    environment:
+      DATABASE_NAME: ${DATABASE_NAME}
+      DATABASE_USER: ${DATABASE_USER}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+    ports:
+      - 80:80
+      - 8000:8000
+      
+      
+  database:
+    image: fsl-test/sql:1.0.0
+    build:
+      context: ./docker/db
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - mysql:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DATABASE_PASSWORD}
+      MYSQL_USER: ${DATABASE_USER}
+      MYSQL_PASSWORD: ${DATABASE_PASSWORD}
+      MYSQL_DATABASE: ${DATABASE_NAME}
+      MYSQL_INITDB_SKIP_TZINFO: 1
+    ports:
+      - 3306:3306
+      
+  adminer:
+    image: adminer:latest
+    ports:
+      - 8080:8080
+      
+volumes:
+  mysql:
